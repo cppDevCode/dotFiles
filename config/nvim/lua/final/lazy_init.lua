@@ -77,7 +77,20 @@ require("lazy").setup({
         },
         config = function()
             local cmp = require("cmp")
+            local ls = require("luasnip") -- Requerimos LuaSnip
             require("luasnip.loaders.from_vscode").lazy_load()
+            -- --- CONFIGURACIÓN DE LOREM IPSUM ---
+            ls.add_snippets("all", {
+                ls.snippet("lorem", {
+                    ls.text_node({
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                        "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris",
+                        "nisi ut aliquip ex ea commodo consequat."
+                    }),
+                }),
+            })
+            -- ------------------------------------
             cmp.setup({
                 snippet = { expand = function(args) require('luasnip').lsp_expand(args.body) end },
                 mapping = cmp.mapping.preset.insert({
