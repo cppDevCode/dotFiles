@@ -165,6 +165,22 @@ require("lazy").setup({
                 }
             })
         end
+    },
+    -- 9. ToggleTerm (Consola integrada)
+    {
+        'akinsho/toggleterm.nvim',
+        version = "*",
+        config = function()
+            require("toggleterm").setup({
+                size = 15,
+                open_mapping = [[<C-t>]], -- Cambia esto a <C-t> si no tienes ñ
+                hide_numbers = true,
+                shade_terminals = true,
+                direction = 'horizontal', -- Se abre abajo como en VS Code
+                close_on_exit = true,
+                shell = vim.o.shell,
+            })
+        end
     }
 })
 
@@ -177,3 +193,12 @@ local map = vim.keymap.set
 map("n", "<S-h>", "<cmd>BufferLineCyclePrev<cr>", { desc = "Buffer Anterior" })
 map("n", "<S-l>", "<cmd>BufferLineCycleNext<cr>", { desc = "Siguiente Buffer" })
 map("n", "<leader>x", "<cmd>bdelete<cr>", { desc = "Cerrar Buffer actual" })
+
+-- Atajos rápidos para la terminal
+function _G.set_terminal_keymaps()
+  local opts = {buffer = 0}
+  map('t', '<esc>', [[<C-\><C-n>]], opts) -- Salir del modo escritura en terminal
+  map('t', '<C-t>', [[<Cmd>toggleterm<CR>]], opts) -- Cerrarla estando dentro
+end
+
+vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
