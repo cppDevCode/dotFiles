@@ -1,7 +1,7 @@
 -- Archivo de configuracion basado en https://medium.com/@edominguez.se/so-i-switched-to-neovim-in-2025-163b85aa0935
 -- Fecha de Creación: 03/04/2026
 -- Version de prueba NVIM 0.12
--- Version 1.4
+-- Version 1.3
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
@@ -64,6 +64,12 @@ require("lazy").setup({
             })
         end
     },
+    -- 3.9 AUTOPAIR
+    {
+    "windwp/nvim-autopairs",
+    event = "InsertEnter",
+    config = true -- Esto ejecuta el setup básico automáticamente
+    },
 
     -- 4. Autocompletado
     {
@@ -76,9 +82,13 @@ require("lazy").setup({
             "rafamadriz/friendly-snippets",
         },
         config = function()
+            local cmp_autopairs = require('nvim-autopairs.completion.cmp')
             local cmp = require("cmp")
             local ls = require("luasnip") -- Requerimos LuaSnip
             require("luasnip.loaders.from_vscode").lazy_load()
+            -- --- CONFIGURACION DE AUTOCOMPLETADOS DE BRACKETS ---
+            cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
+            -- ----------------------------------------------------
             -- --- CONFIGURACIÓN DE LOREM IPSUM ---
             ls.add_snippets("all", {
                 ls.snippet("lorem", {
