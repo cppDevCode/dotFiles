@@ -1,7 +1,7 @@
 -- Archivo de configuracion basado en https://medium.com/@edominguez.se/so-i-switched-to-neovim-in-2025-163b85aa0935
 -- Fecha de Creación: 03/04/2026
 -- Version de prueba NVIM 0.12
--- Version 1.2
+-- Version 1.4
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
@@ -194,6 +194,40 @@ require("lazy").setup({
                 shell = vim.o.shell,
             })
         end
+    },
+       -- 10. Auto-save para que Live Server detecte cambios al escribir
+    {
+        "Pocco81/auto-save.nvim",
+        config = function()
+            require("auto-save").setup({
+                enabled = true,
+                execution_message = {
+                    message = function() return ("Cambios guardados...") end,
+                    dim = 0.18,
+                    cleaning_interval = 1250,
+                },
+                trigger_events = {"InsertLeave", "TextChanged"}, -- Guarda al salir de modo insertar o cambiar texto
+            })
+        end,
+    },
+    -- 11. Navegador embebido para Live Preview
+    {
+        "toppair/peek.nvim",
+        event = { "VeryLazy" },
+        build = "deno task --quiet build:fast",
+        config = function()
+            require("peek").setup({
+                auto_load = true,         -- Carga contenido al abrir
+                close_on_bdelete = true,  -- Cierra la ventana si cierras el buffer
+                syntax = true,            -- Soporte de resaltado
+                theme = 'dark',           -- Tema oscuro para coincidir con Catppuccin
+                throttle_at = 200000,     -- Límite de tamaño de archivo
+                throttle_time =  30       -- Tiempo de actualización en ms
+            })
+            -- Comando para abrir la previsualización
+            vim.api.nvim_create_user_command("PeekOpen", require("peek").open, {})
+            vim.api.nvim_create_user_command("PeekClose", require("peek").close, {})
+        end,
     }
 })
 
@@ -215,3 +249,13 @@ function _G.set_terminal_keymaps()
 end
 
 vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
+
+-- Función para abrir Live Preview en un split vertical
+vim.keymap.set('n', '<leader>p', function()
+    vim.cmd("write") -- Guarda cambios
+    
+    -- Limpiamos el puerto 3000 por si acaso quedó algo colgado
+    vim.fn.jobstart("fuser -k 3000/tcp")
+    vim.fn.jobstart("live-server --port=3000 --no-browser --watch=. --ignore='**/.*'")
+    print("Servidor corriendo en el puerto 3000...")
+end, { desc = "Live Preview Blindado" })

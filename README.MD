@@ -9,16 +9,23 @@ Este repositorio contiene mis archivos de configuración personalizables (dotfil
 * PYTHON 3
 * GCC
 * MAKE
+* live-server (Necesario para emular el Live Preview de Code)
+* npm
 
 ## IMPORTANTE
 La configuración de Nvim fue probada con la version 0.12 corriendo en Linux Mint 22.3.
 
+## Instalacion de live-server
+```bash
+npm install -g live-server
+```
 
 ## NVIM
 
 ### Uso
 * Habilitar arbol de navegacion de Archivos Espacio + e
 * Mostrar Archivos Ocultos Shift + H
+* Activar Live Preview Espacio + e
 
 ## bt.sh 
 
