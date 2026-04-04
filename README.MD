@@ -9,6 +9,7 @@ Este repositorio contiene mis archivos de configuración personalizables (dotfil
 * PYTHON 3
 * GCC
 * MAKE
+* deno
 * live-server (Necesario para emular el Live Preview de Code)
 * npm
 
@@ -18,6 +19,11 @@ La configuración de Nvim fue probada con la version 0.12 corriendo en Linux Min
 ## Instalacion de live-server
 ```bash
 npm install -g live-server
+```
+
+## Instalacion de live-server
+```bash
+npm install -g deno
 ```
 
 ## NVIM
