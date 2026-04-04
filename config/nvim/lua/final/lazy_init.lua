@@ -1,6 +1,7 @@
 -- Archivo de configuracion basado en https://medium.com/@edominguez.se/so-i-switched-to-neovim-in-2025-163b85aa0935
 -- Fecha de Creación: 03/04/2026
 -- Version de prueba NVIM 0.12
+-- Version 1.2
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
@@ -40,20 +41,15 @@ require("lazy").setup({
                 ensure_installed = { "lua_ls", "pyright", "ts_ls", "html", "cssls" },
             })
 
-            --local lspconfig = require("lspconfig")
             local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
             -- Configuración de servidores
             local servers = { "lua_ls", "pyright", "ts_ls", "html", "cssls" }
             for _, lsp in ipairs(servers) do
-                -- Se cambia para soporte de nvim version 0.11+
-                  vim.lsp.config(lsp, {
+                vim.lsp.config(lsp, {
                     capabilities = capabilities,
                 })
-                  vim.lsp.enable(lsp)
-              --  lspconfig[lsp].setup({
-                  --  capabilities = capabilities,
-                --})
+                vim.lsp.enable(lsp)
             end
 
             -- Atajos de teclado LSP
@@ -81,7 +77,6 @@ require("lazy").setup({
         },
         config = function()
             local cmp = require("cmp")
-            -- Carga los snippets estilo VS Code (incluyendo el !)
             require("luasnip.loaders.from_vscode").lazy_load()
             cmp.setup({
                 snippet = { expand = function(args) require('luasnip').lsp_expand(args.body) end },
@@ -105,20 +100,80 @@ require("lazy").setup({
 
     -- 5. Treesitter
     {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    opts = {
-        ensure_installed = { "lua", "vim", "vimdoc", "query", "java", "python" },
-        highlight = { enable = true },
-        indent = { enable = true },
+        "nvim-treesitter/nvim-treesitter",
+        build = ":TSUpdate",
+        opts = {
+            ensure_installed = { "lua", "vim", "vimdoc", "query", "java", "python" },
+            highlight = { enable = true },
+            indent = { enable = true },
+        },
+        config = function(_, opts)
+            require("nvim-treesitter").setup(opts)
+        end
     },
-    config = function(_, opts)
-        require("nvim-treesitter").setup(opts)
-    end
-},
 
     -- 6. Autotag
-    { "windwp/nvim-ts-autotag", opts = {} }
+    { "windwp/nvim-ts-autotag", opts = {} },
+
+    -- 7. BufferLine Tabs
+    {
+        'akinsho/bufferline.nvim',
+        version = "*",
+        dependencies = 'nvim-tree/nvim-web-devicons',
+        config = function()
+            require("bufferline").setup({
+                options = {
+                    mode = "buffers",
+                    separator_style = "slant",
+                    diagnostics = "nvim_lsp",
+                    always_show_bufferline = true,
+                }
+            })
+        end,
+    },
+    -- 8. Barra de Estado (Lualine)
+    {
+        'nvim-lualine/lualine.nvim',
+        dependencies = { 'nvim-tree/nvim-web-devicons' },
+        config = function()
+            require('lualine').setup({
+                options = {
+                    theme = 'auto',
+                    component_separators = { left = '', right = ''},
+                    section_separators = { left = '', right = ''},
+                },
+                sections = {
+                    lualine_a = {'mode'},
+                    lualine_b = {'branch'},
+                    lualine_c = {{'filename', path = 1}}, -- path = 1 muestra ruta relativa
+                    lualine_x = {'filetype', {
+                        function()
+                            local msg = 'No LSP'
+                            local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
+                            local clients = vim.lsp.get_active_clients()
+                            if next(clients) == nil then return msg end
+                            local lsp_names = {}
+                            for _, client in ipairs(clients) do
+                                table.insert(lsp_names, client.name)
+                            end
+                            return table.concat(lsp_names, ' ')
+                        end,
+                        icon = ' ',
+                    }},
+                    lualine_y = {'progress'},
+                    lualine_z = {'location'}
+                }
+            })
+        end
+    }
 })
 
+-- Configuraciones Generales y Colores
 vim.cmd.colorscheme "catppuccin"
+
+
+-- Keymaps para Bufferline
+local map = vim.keymap.set
+map("n", "<S-h>", "<cmd>BufferLineCyclePrev<cr>", { desc = "Buffer Anterior" })
+map("n", "<S-l>", "<cmd>BufferLineCycleNext<cr>", { desc = "Siguiente Buffer" })
+map("n", "<leader>x", "<cmd>bdelete<cr>", { desc = "Cerrar Buffer actual" })
