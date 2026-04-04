@@ -38,6 +38,7 @@ bt d
 
 
 📂 Estructura del Proyecto
+```text
 .
 ├── config/                # Configuraciones de programas (~/.config)
 │    └── nvim/               # Neovim (Lua config)
@@ -52,4 +53,4 @@ bt d
 │   └── fonts/             # Tipografías (JetBrains Mono, Nerd Fonts)
 └── install.sh              # Script de despliegue automatizado
 
-
+```
