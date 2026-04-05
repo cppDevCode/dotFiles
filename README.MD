@@ -12,6 +12,8 @@ Este repositorio contiene mis archivos de configuración personalizables (dotfil
 * deno
 * live-server (Necesario para emular el Live Preview de Code)
 * npm
+* playerctl
+* cliente oficial de Spotify
 
 ## IMPORTANTE
 La configuración de Nvim fue probada con la version 0.12 corriendo en Linux Mint 22.3.
@@ -26,12 +28,21 @@ npm install -g live-server
 npm install -g deno
 ```
 
+## Instalacion de playerctl
+```bash
+sudo apt install playerctl
+```
+
 ## NVIM
 
 ### Uso
 * Habilitar arbol de navegacion de Archivos Espacio + e
 * Mostrar Archivos Ocultos Shift + H
 * Activar Live Preview Espacio + e
+* Spotify Reproducir/Pausa: Espacio + s + p
+* Spotify Siguiente: Espacio + s + n
+* Spotify Anterior: Espacio + s + b
+* Spotify Buscar cancion: Espacio + s + f
 
 ## bt.sh 
 

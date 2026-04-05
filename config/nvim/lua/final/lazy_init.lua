@@ -1,7 +1,7 @@
 -- Archivo de configuracion basado en https://medium.com/@edominguez.se/so-i-switched-to-neovim-in-2025-163b85aa0935
 -- Fecha de Creación: 03/04/2026
 -- Version de prueba NVIM 0.12
--- Version 1.3
+-- Version 1.4
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
@@ -169,20 +169,27 @@ require("lazy").setup({
                     lualine_a = {'mode'},
                     lualine_b = {'branch'},
                     lualine_c = {{'filename', path = 1}}, -- path = 1 muestra ruta relativa
-                    lualine_x = {'filetype', {
-                        function()
-                            local msg = 'No LSP'
-                            local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
-                            local clients = vim.lsp.get_active_clients()
-                            if next(clients) == nil then return msg end
-                            local lsp_names = {}
-                            for _, client in ipairs(clients) do
-                                table.insert(lsp_names, client.name)
-                            end
-                            return table.concat(lsp_names, ' ')
-                        end,
-                        icon = ' ',
-                    }},
+                    lualine_x = {
+                        -- Componente de Spotify integrado
+                        {
+                            function()
+                                local status = io.popen("playerctl -p spotify metadata --format '{{ title }}' 2>/dev/null"):read("*l")
+                                return (status and status ~= "") and ("  " .. status) or ""
+                            end,
+                            color = { fg = "#1DB954", gui = "bold" },
+                        },
+                        'filetype', 
+                        {
+                            function()
+                                local clients = vim.lsp.get_active_clients()
+                                if next(clients) == nil then return 'No LSP' end
+                                local names = {}
+                                for _, client in ipairs(clients) do table.insert(names, client.name) end
+                                return table.concat(names, ' ')
+                            end,
+                            icon = ' ',
+                        }
+                    },
                     lualine_y = {'progress'},
                     lualine_z = {'location'}
                 }
@@ -269,3 +276,45 @@ vim.keymap.set('n', '<leader>p', function()
     vim.fn.jobstart("live-server --port=3000 --no-browser --watch=. --ignore='**/.*'")
     print("Servidor corriendo en el puerto 3000...")
 end, { desc = "Live Preview Blindado" })
+
+--Spotify
+-- 1. Función de búsqueda (Linux/DBus)
+local function spotify_search()
+    vim.ui.input({ prompt = 'Buscar en Spotify: ' }, function(input)
+        if input and input ~= "" then
+            -- Formateamos la búsqueda para la URI de Spotify
+            local query = input:gsub(" ", "%%20")
+            -- Comando DBus para abrir la búsqueda en el cliente de Spotify
+            os.execute("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.OpenUri string:'spotify:search:" .. query .. "'")
+            vim.notify("Buscando: " .. input, "info", { title = "Spotify" })
+        end
+    end)
+end
+
+-- 2. Función de control básica
+local function spotify_control(command)
+    return function() os.execute("playerctl -p spotify " .. command) end
+end
+
+-- --- KEYMAPS ACTUALIZADOS ---
+local map = vim.keymap.set
+
+-- Control de reproducción
+map("n", "<leader>sp", spotify_control("play-pause"), { desc = "Spotify: Play/Pause" })
+map("n", "<leader>sn", spotify_control("next"), { desc = "Spotify: Siguiente" })
+map("n", "<leader>sb", spotify_control("previous"), { desc = "Spotify: Anterior" })
+
+-- Buscar canción (Leader + s + f de 'find')
+map("n", "<leader>sf", spotify_search, { desc = "Spotify: Buscar canción" })
+
+-- Info de canción actual
+map("n", "<leader>st", function()
+    local handle = io.popen("playerctl -p spotify metadata --format '{{ title }} - {{ artist }}' 2>/dev/null")
+    local result = handle:read("*a")
+    handle:close()
+    if result and result ~= "" then
+        vim.notify("Sintonizando: " .. result, "info", { title = "Spotify" })
+    else
+        vim.notify("Spotify no está reproduciendo", "warn")
+    end
+end, { desc = "Spotify: Info canción" })
