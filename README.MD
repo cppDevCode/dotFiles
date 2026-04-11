@@ -15,6 +15,8 @@ Este repositorio contiene mis archivos de configuración personalizables (dotfil
 * playerctl
 * cliente oficial de Spotify
 * lazyrocks
+* Tree-sitter Client
+* ripgrep
 
 
 ## IMPORTANTE
@@ -39,7 +41,15 @@ sudo apt install playerctl
 ```bash
 sudo apt install lazyrocks
 ```
+## Instalacion de Tree-sitter Client
+```bash
+sudo apt install tree-sitter-cli
+```
 
+## Instalacion de ripgrep
+```bash
+sudo apt install ripgrep
+```
 
 ## NVIM
 

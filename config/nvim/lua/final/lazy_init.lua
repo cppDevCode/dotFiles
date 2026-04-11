@@ -185,7 +185,7 @@ require("lazy").setup({
                         'filetype', 
                         {
                             function()
-                                local clients = vim.lsp.get_active_clients()
+                                local clients = vim.lsp.get_clients()
                                 if next(clients) == nil then return 'No LSP' end
                                 local names = {}
                                 for _, client in ipairs(clients) do table.insert(names, client.name) end
