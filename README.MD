@@ -6,7 +6,7 @@ Este repositorio contiene mis archivos de configuración personalizables (dotfil
 * NVIM 0.12+
 * FFMPEG
 * AVIFENC
-* PYTHON 3
+* PYTHON 3 - Se debe instalar python3-pip adicionalmente
 * GCC
 * MAKE
 * deno
@@ -14,6 +14,10 @@ Este repositorio contiene mis archivos de configuración personalizables (dotfil
 * npm
 * playerctl
 * cliente oficial de Spotify
+* lazyrocks
+* Tree-sitter Client
+* ripgrep
+
 
 ## IMPORTANTE
 La configuración de Nvim fue probada con la version 0.12 corriendo en Linux Mint 22.3.
@@ -31,6 +35,20 @@ npm install -g deno
 ## Instalacion de playerctl
 ```bash
 sudo apt install playerctl
+```
+
+## Instalacion de lazyrocks
+```bash
+sudo apt install lazyrocks
+```
+## Instalacion de Tree-sitter Client
+```bash
+sudo apt install tree-sitter-cli
+```
+
+## Instalacion de ripgrep
+```bash
+sudo apt install ripgrep
 ```
 
 ## NVIM
