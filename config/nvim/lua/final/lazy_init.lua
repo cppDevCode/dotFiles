@@ -130,7 +130,7 @@ require("lazy").setup({
         "nvim-treesitter/nvim-treesitter",
         build = ":TSUpdate",
         opts = {
-            ensure_installed = { "lua", "vim", "vimdoc", "query", "java", "python" },
+            ensure_installed = { "lua", "vim", "vimdoc", "query", "java", "python", "javascript", "html", "css" },
             highlight = { enable = true },
             indent = { enable = true },
         },
