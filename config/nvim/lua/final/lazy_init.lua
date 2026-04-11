@@ -177,8 +177,8 @@ require("lazy").setup({
                         -- Componente de Spotify integrado
                         {
                             function()
-                                local status = io.popen("playerctl -p spotify metadata --format '{{ title }}' 2>/dev/null"):read("*l")
-                                return (status and status ~= "") and ("  " .. status) or ""
+                                local status = io.popen("playerctl -p spotify metadata --format '{{ artist }} - {{ title }}' 2>/dev/null"):read("*l")
+                                return (status and status ~= "") and ("🎧 " .. status) or ""
                             end,
                             color = { fg = "#1DB954", gui = "bold" },
                         },
