@@ -1,0 +1,49 @@
+# Soporte para depuración (DAP) 
+
+## Integraciones
+Se integro nvim-dap, nvim-dap-ui, y one-small-step-for-vimkind en el lazy_init.lua. Esto es especialmente útil si vas a depurar código Lua nativo de Neovim o tus propias configuraciones. Los atajos de teclado clave quedaron así:
+
+* <F5>: Iniciar/Continuar.
+* <leader>db: Toggle Breakpoint.
+* <leader>ds: Iniciar servidor de debugging para conectarte desde terminal.
+
+## ¿Qué es el modo Headless y cómo se usa en Neovim 0.12?
+* El modo headless (--headless) permite ejecutar Neovim sin ninguna interfaz gráfica o interfaz de terminal (TUI). 
+* Existen dos enfoques principales de debugging x línea de comandos usando este modo en versiones modernas (0.10, 0.11 y la actual 0.12):
+
+1. Uso Nativo de Neovim (Remote UI Protocol)
+En Neovim 0.12, puedes iniciar un proceso Neovim invisible de fondo y decirle que escuche comandos. Muy útil si necesitas correr tests lentos, scripts o iniciar herramientas de Node y quieres "entrar a ver" en caso de un error.
+
+* Paso 1: En una terminal, ejecuta Neovim en modo headless creando un socket/pipe de escucha.
+
+
+```bash
+nvim --headless --listen /tmp/nvim.pipe
+```
+
+(El proceso correrá y se quedará "colgado" en segundo plano sin mostrar interfaz).
+
+* Paso 2: Desde otra pestaña de tu terminal, únete a ese proceso usando --remote-ui. Al hacerlo, verás exactamente la sesión de ese Neovim que estaba invisible y podrás interactuar con ella como de costumbre.
+
+```bash
+nvim --remote-ui --server /tmp/nvim.pipe
+```
+
+Para salir y dejarlo corriendo en el fondo nuevamente, solo usa los comandos nativos para desconectarte sin matar el proceso.
+
+* 2. Depuración vía DAP Server (Client-Server por Terminal)
+Si lo que buscas es programar e inspeccionar variables paso a paso corriendo en un Neovim de fondo (servidor), puedes hacer que ese "servidor" inicie el debugger y tú, usando tu Neovim normal, te conectes a él usando los bindings que acabamos de agregar:
+
+* Paso 1 (Servidor Headless): Lanza Neovim en modo consola e invoca el servidor DAP en el puerto 8086.
+
+```bash
+nvim --headless -c "lua require('osv').launch({port = 8086})" tuscript.lua
+```
+
+* Paso 2 (Tu terminal normal):
+*Nota* debe de estar en el mismo entorno
+1. Abres un Neovim en otra consola.
+2. Presionas <F5>.
+3. Seleccionas la opción "Attach to running Neovim instance". Automáticamente se conectará por red a tu proceso headless. Podrás navegar sobre tu código usando de forma tradicional <F10> para dar un paso o ver el estado de cada variable en la UI que instalamos (nvim-dap-ui).
+
+* Si vas a realizar la depuración para lenguajes como Python o JS mediante Mason, puedes instalar directamente los adaptadores desde :Mason (js-debug-adapter o debugpy) y el comando <F5> por sí mismo bastará para levantar entornos de pruebas internos desde tu misma consola.

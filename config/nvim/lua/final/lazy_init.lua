@@ -1,7 +1,7 @@
 -- Archivo de configuracion basado en https://medium.com/@edominguez.se/so-i-switched-to-neovim-in-2025-163b85aa0935
 -- Fecha de Creación: 03/04/2026
 -- Version de prueba NVIM 0.12
--- Version 1.4
+-- Version 1.5
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
@@ -130,7 +130,7 @@ require("lazy").setup({
         "nvim-treesitter/nvim-treesitter",
         build = ":TSUpdate",
         opts = {
-            ensure_installed = { "lua", "vim", "vimdoc", "query", "java", "python", "javascript", "html", "css" },
+            ensure_installed = { "lua", "vim", "vimdoc", "query", "java", "python", "javascript", "typescript", "html", "css" },
             highlight = { enable = true },
             indent = { enable = true },
         },
@@ -178,7 +178,7 @@ require("lazy").setup({
                         {
                             function()
                                 local status = io.popen("playerctl -p spotify metadata --format '{{ artist }} - {{ title }}' 2>/dev/null"):read("*l")
-                                return (status and status ~= "") and ("🎧 " .. status) or ""
+                                return (status and status ~= "") and ("🎧  " .. status) or ""
                             end,
                             color = { fg = "#1DB954", gui = "bold" },
                         },
@@ -249,6 +249,56 @@ require("lazy").setup({
             vim.api.nvim_create_user_command("PeekOpen", require("peek").open, {})
             vim.api.nvim_create_user_command("PeekClose", require("peek").close, {})
         end,
+    },
+
+    -- 12. Debugger (DAP) y soporte Headless
+    {
+        "mfussenegger/nvim-dap",
+        dependencies = {
+            "williamboman/mason.nvim",
+            "jay-babu/mason-nvim-dap.nvim",
+            "rcarriga/nvim-dap-ui",
+            "nvim-neotest/nvim-nio",
+            "jbyuki/one-small-step-for-vimkind", -- Para debuggear Lua (incluye headless support)
+        },
+        config = function()
+            require("mason-nvim-dap").setup({
+                ensure_installed = { "python" },
+                handlers = {},
+            })
+            local dap = require("dap")
+            local dapui = require("dapui")
+            dapui.setup()
+
+            -- DAP para Lua
+            dap.configurations.lua = {
+                {
+                    type = 'nlua',
+                    request = 'attach',
+                    name = "Attach to running Neovim instance",
+                }
+            }
+            dap.adapters.nlua = function(callback, config)
+                callback({ type = 'server', host = config.host or "127.0.0.1", port = config.port or 8086 })
+            end
+
+            -- Autoclose/open UI
+            dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
+            dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
+            dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
+
+            -- Keymaps de Debugger via consola/TUI
+            vim.keymap.set('n', '<F5>', function() dap.continue() end, { desc = "DAP: Iniciar/Continuar" })
+            vim.keymap.set('n', '<F10>', function() dap.step_over() end, { desc = "DAP: Step Over" })
+            vim.keymap.set('n', '<F11>', function() dap.step_into() end, { desc = "DAP: Step Into" })
+            vim.keymap.set('n', '<leader>db', function() dap.toggle_breakpoint() end, { desc = "DAP: Breakpoint" })
+            
+            -- Iniciar servidor debugger para Lua (ideal para conectarse desde otro Nvim headless)
+            vim.keymap.set('n', '<leader>ds', function()
+                require"osv".launch({port = 8086})
+                print("Servidor DAP de Lua iniciado en puerto 8086")
+            end, { desc = "DAP: Iniciar Servidor Lua" })
+        end
     }
 })
 
@@ -322,3 +372,4 @@ map("n", "<leader>st", function()
         vim.notify("Spotify no está reproduciendo", "warn")
     end
 end, { desc = "Spotify: Info canción" })
+
