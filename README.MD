@@ -1,80 +1,124 @@
-# Archivos de Configuración
-Este repositorio contiene mis archivos de configuración personalizables (dotfiles), scripts de automatización en Bash y los assets necesarios para mantener un entorno de desarrollo productivo, estético y consistente en diferentes distribuciones de Linux.
+# 🚀 dotFiles
 
+<p align="center">
+  <em>Mis archivos de configuración personalizables, scripts de automatización y herramientas para un entorno de desarrollo productivo y moderno en Linux.</em>
+</p>
 
-## Prerequisitos
-* NVIM 0.12+
-* FFMPEG
-* AVIFENC
-* PYTHON 3
-* GCC
-* MAKE
-* deno
-* live-server (Necesario para emular el Live Preview de Code)
-* npm
-* playerctl
-* cliente oficial de Spotify
+---
 
-## IMPORTANTE
-La configuración de Nvim fue probada con la version 0.12 corriendo en Linux Mint 22.3.
+## 📖 Descripción General
 
-## Instalacion de live-server
+Este repositorio alberga mis **dotfiles** y configuraciones esenciales para mantener un ecosistema de desarrollo optimizado, estético y consistente en cualquier distribución basada en Linux (testeado principalmente en Linux Mint 22.3). El núcleo de la configuración pivota en torno a **Neovim 0.12+**, empleando gestores modernos y asegurando una profunda integración con el sistema para maximizar la productividad.
+
+## 🛠️ Stack Tecnológico & Prerrequisitos
+
+Para la correcta ejecución e instalación de todas las dependencias y scripts, se requiere el siguiente stack de herramientas:
+
+### 🧩 Core
+- **Neovim** `0.12+` (Motor principal del entorno)
+- **Python 3** (se requiere el paquete `python3-pip`)
+- **Node.js & npm** (Gestor de dependencias)
+- **Deno** (Runtime moderno para aplicaciones en TS/JS)
+
+### 📦 Herramientas CLI & Sistema
+- **Compilación C/C++:** `gcc`, `make`
+- **Multimedia:** `ffmpeg`, `avifenc`, `playerctl`, `Spotify Oficial`
+- **Búsqueda & Navegación:** `ripgrep`, `mc` (Midnight Commander)
+- **DevTools & Parsers:** `tree-sitter-cli`, `lazyrocks`, `debugpy`
+- **Previsualización Web:** `live-server` (Emula el Live Preview de VSCode)
+
+---
+
+## ⚡ Instalación Rápida de Dependencias
+
+A continuación, los comandos recomendados para desplegar las dependencias requeridas en Debian/Ubuntu (o distros derivadas como Mint):
+
 ```bash
-npm install -g live-server
+# Herramientas del sistema y de red
+sudo apt update && sudo apt install -y playerctl tree-sitter-cli ripgrep mc gcc make
+
+# Herramientas y complementos específicos
+sudo apt install -y lazyrocks
+
+# Utilitarios y Servidores Web (Vía NPM)
+npm install -g live-server deno
 ```
 
-## Instalacion de live-server
-```bash
-npm install -g deno
-```
+> **📌 Nota:** Es importante asegurarse de contar con `Python 3` y `pip` correctamente inicializados.
 
-## Instalacion de playerctl
-```bash
-sudo apt install playerctl
-```
+---
 
-## NVIM
+## 💻 Entorno de Neovim
 
-### Uso
-* Habilitar arbol de navegacion de Archivos Espacio + e
-* Mostrar Archivos Ocultos Shift + H
-* Activar Live Preview Espacio + e
-* Spotify Reproducir/Pausa: Espacio + s + p
-* Spotify Siguiente: Espacio + s + n
-* Spotify Anterior: Espacio + s + b
-* Spotify Buscar cancion: Espacio + s + f
+La configuración de Neovim está diseñada buscando la velocidad, el uso intensivo de atajos de teclado y un workflow altamente dinámico.
 
-## bt.sh 
+### ⌨️ Keybindings Principales
 
-### Descripción
-Permite la conección y desconeccion del dispositivo de Bluetooth, busca por el nombre "AIWA-T600D"
+| Uso / Módulo | Atajo de Teclado | Descripción |
+| :--- | :--- | :--- |
+| **Explorador** | `<Space> + e` | Activar/Mostrar el árbol de navegación de archivos. |
+| **Explorador** | `<Space> + f + m` | Abrir versión extendida del navegador de archivos. |
+| **Buscar** | `<Space> + f` | Realizar búsquedas dentro del árbol de navegación. |
+| **Archivos** | `a` | Crear un archivo nuevo en el árbol de navegación. |
+| **Visibilidad**| `<Shift> + h` | Mostrar/Ocultar archivos ocultos en el explorador. |
+| **Live Preview**| `<Space> + p` | Activar el Live Server Preview para desarrollo web. |
+| **App MC** | `<Space> + e + f` | Lanzar Midnight Commander como explorador clásico. |
 
-###Uso
-Conección del dispositivo
-```bash
-bt c
-```
+### 🎵 Integración con Spotify
+Control directo de tu música desde Neovim usando `playerctl`:
+- **Play / Pause:** `<Space> + s + p`
+- **Siguiente Pista:** `<Space> + s + n`
+- **Pista Anterior:** `<Space> + s + b`
+- **Buscar Canción:** `<Space> + s + f`
 
-Desconeccion del dispositivo
-```bash
-bt d
-```
+---
 
+## 📜 Scripts de Automatización Bash
 
-📂 Estructura del Proyecto
+En el directorio `/bin/` se incluyen varios scripts diseñados para eficientizar tareas rudimentarias y multimedia:
+
+### 📡 `bt.sh` (Gestor de Bluetooth)
+Gestiona la conexión y desconexión rápida de tu dispositivo de audio Bluetooth (por defecto, configurado para *"AIWA-T600D"*).
+- **Conectar Dispositivo:**
+  ```bash
+  bt c
+  ```
+- **Desconectar Dispositivo:**
+  ```bash
+  bt d
+  ```
+
+### 🔄 Utilidades de Transcodificación y Red
+- **`mp3ToOgg.sh`**: Transcodificador masivo de formato MP3 a OGG.
+- **`mp4ToWebM.sh`**: Convierte videos MP4 a WEBM optimizado para la web.
+- **`toAvif.sh`**: Convierte recursos de imagen al moderno y eficiente formato AVIF.
+- **`serverHttp.sh`**: Levanta un servidor web local de manera instantánea.
+
+---
+
+## 📂 Arquitectura del Repositorio
+
+La organización interna refleja la disposición de los archivos en `$HOME`, permitiendo una reinstalación directa o uso de un script de despliegue (`install.sh`).
+
 ```text
 .
-├── config/                # Configuraciones de programas (~/.config)
-│    └── nvim/               # Neovim (Lua config)
-├── home/                   # Archivos que van directamente en $HOME
-│   ├── bin/
-│   │    ├─ bt.sh
-│   │    ├─ mp3ToOgg.sh
-│   │    ├─ mp4ToWebM.sh 
-│   │    ├─ serverHttp.sh
-│   │    └─ toAvif.sh
-│   ├── bashrc             # Corresponde a ~/.bashrc
-│   └── fonts/             # Tipografías (JetBrains Mono, Nerd Fonts)
-└── install.sh              # Script de despliegue automatizado
-
+├── config/                # Configuraciones core (~/.config/)
+│    └── nvim/             # Configuración principal de Neovim (En Lua)
+├── bin/                   # Utilitarios y scripts del sistema (~/bin/)
+│    ├── bt.sh
+│    ├── mp3ToOgg.sh
+│    ├── mp4ToWebM.sh 
+│    ├── serverHttp.sh
+│    └── toAvif.sh
+├── bashrc                 # Entorno del shell, aliases y config (~/.bashrc)
+├── fonts/                 # Tipografías recomendadas (Ej: JetBrains Mono Nerd Font)
+├── local/                 # Modificaciones de estado locales (~/.local/)
+├── docs/                  # Documentación complementaria y tutoriales
+└── install.sh             # Script de despliegue y symlinking
 ```
+
+---
+
+<p align="center">
+  <em>Diseñado y optimizado para desarrolladores de alto rendimiento.</em>
+</p>
