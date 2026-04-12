@@ -17,6 +17,7 @@ Este repositorio contiene mis archivos de configuración personalizables (dotfil
 * lazyrocks
 * Tree-sitter Client
 * ripgrep
+* debugpy
 
 
 ## IMPORTANTE
