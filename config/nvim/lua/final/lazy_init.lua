@@ -1,7 +1,7 @@
 -- Archivo de configuracion basado en https://medium.com/@edominguez.se/so-i-switched-to-neovim-in-2025-163b85aa0935
 -- Fecha de Creación: 03/04/2026
 -- Version de prueba NVIM 0.12
--- Version 1.5
+-- Version 1.6
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
@@ -23,7 +23,20 @@ require("lazy").setup({
         branch = "v3.x",
         dependencies = { "nvim-lua/plenary.nvim", "nvim-tree/nvim-web-devicons", "MunifTanjim/nui.nvim" },
         config = function()
-            vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>', { silent = true })
+            require("neo-tree").setup({
+                close_if_last_window = true,
+                filesystem = {
+                    filtered_items = {
+                        visible = true,
+                        hide_dotfiles = false,
+                        hide_gitignored = false,
+                    },
+                    follow_current_file = {
+                        enabled = true,
+                    },
+                },
+            })
+            vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>', { silent = true, desc = "Explorador de Archivos" })
         end
     },
 
@@ -86,12 +99,15 @@ require("lazy").setup({
             "rafamadriz/friendly-snippets",
         },
         config = function()
-            local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+            --local cmp_autopairs = require('nvim-autopairs.completion.cmp')
             local cmp = require("cmp")
             local ls = require("luasnip") -- Requerimos LuaSnip
+            local s = ls.snippet
+            local f = ls.function_node
+            local i = ls.insert_node
             require("luasnip.loaders.from_vscode").lazy_load()
             -- --- CONFIGURACION DE AUTOCOMPLETADOS DE BRACKETS ---
-            cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
+           -- cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
             -- ----------------------------------------------------
             -- --- CONFIGURACIÓN DE LOREM IPSUM ---
             ls.add_snippets("all", {
@@ -105,13 +121,40 @@ require("lazy").setup({
                 }),
             })
             -- ------------------------------------
+            -- Snippet: seccion.clase -> <seccion class="clase"></seccion>
+            ls.add_snippets("html", {
+                s({ trig = "([%w-]+)%.([%w-]+)", regTrig = true, wordTrig = false }, {
+                    f(function(_, snip)
+                        return string.format('<%s class="%s">', snip.captures[1], snip.captures[2])
+                    end, {}),
+                    i(1),
+                    f(function(_, snip)
+                        return string.format('</%s>', snip.captures[1])
+                    end, {}),
+                }),
+            })
             cmp.setup({
                 snippet = { expand = function(args) require('luasnip').lsp_expand(args.body) end },
                 mapping = cmp.mapping.preset.insert({
                     ['<C-Space>'] = cmp.mapping.complete(),
                     ['<CR>'] = cmp.mapping.confirm({ select = true }),
                     ['<Tab>'] = cmp.mapping(function(fallback)
-                        if cmp.visible() then cmp.select_next_item() else fallback() end
+                        if require("luasnip").expand_or_jumpable() then
+                            require("luasnip").expand_or_jump()
+                        elseif cmp.visible() then
+                            cmp.select_next_item()
+                        else
+                            fallback()
+                        end
+                    end, { "i", "s" }),
+                    ['<S-Tab>'] = cmp.mapping(function(fallback)
+                        if require("luasnip").jumpable(-1) then
+                            require("luasnip").jump(-1)
+                        elseif cmp.visible() then
+                            cmp.select_prev_item()
+                        else
+                            fallback()
+                        end
                     end, { "i", "s" }),
                 }),
                 sources = cmp.config.sources({
@@ -140,7 +183,18 @@ require("lazy").setup({
     },
 
     -- 6. Autotag
-    { "windwp/nvim-ts-autotag", opts = {} },
+    {
+        "windwp/nvim-ts-autotag",
+        dependencies = { "nvim-treesitter/nvim-treesitter" },
+        opts = {
+            opts = {
+                -- Esto habilita el autocierre y autorenombre de etiquetas
+                enable_close = true,
+                enable_rename = true,
+                enable_close_on_slash = true,
+            }
+        }
+    },
 
     -- 7. BufferLine Tabs
     {
@@ -214,6 +268,29 @@ require("lazy").setup({
                 close_on_exit = true,
                 shell = vim.o.shell,
             })
+
+            -- Configuración adicional: Terminal flotante con Midnight Commander
+            local Terminal = require('toggleterm.terminal').Terminal
+            local mc_term = Terminal:new({
+                cmd = "mc --skin=catppuccin",
+                hidden = true,
+                direction = "float",
+                float_opts = {
+                    border = "curved",
+                    width = math.floor(vim.o.columns * 0.95),  -- 95% del ancho de la pantalla
+                    height = math.floor(vim.o.lines * 0.90),   -- 90% del alto de la pantalla
+                },
+                -- Evitar que Nvim intercepte escapes dentro de mc
+                on_open = function(term)
+                    vim.cmd("startinsert!")
+                    vim.api.nvim_buf_set_keymap(term.bufnr, "n", "q", "<cmd>close<CR>", {noremap = true, silent = true})
+                end,
+            })
+
+            -- Mapeo para <Espacio> + f + m
+            vim.keymap.set('n', '<leader>fm', function()
+                mc_term:toggle()
+            end, { silent = true, desc = "Explorador estilo Midnight Commander" })
         end
     },
        -- 10. Auto-save para que Live Server detecte cambios al escribir
@@ -372,4 +449,3 @@ map("n", "<leader>st", function()
         vim.notify("Spotify no está reproduciendo", "warn")
     end
 end, { desc = "Spotify: Info canción" })
-
