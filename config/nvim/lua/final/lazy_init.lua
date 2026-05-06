@@ -1,7 +1,7 @@
 -- Archivo de configuracion basado en https://medium.com/@edominguez.se/so-i-switched-to-neovim-in-2025-163b85aa0935
 -- Fecha de Creación: 03/04/2026
 -- Version de prueba NVIM 0.12
--- Version 1.6
+-- Version 1.5
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
@@ -23,20 +23,7 @@ require("lazy").setup({
         branch = "v3.x",
         dependencies = { "nvim-lua/plenary.nvim", "nvim-tree/nvim-web-devicons", "MunifTanjim/nui.nvim" },
         config = function()
-            require("neo-tree").setup({
-                close_if_last_window = true,
-                filesystem = {
-                    filtered_items = {
-                        visible = true,
-                        hide_dotfiles = false,
-                        hide_gitignored = false,
-                    },
-                    follow_current_file = {
-                        enabled = true,
-                    },
-                },
-            })
-            vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>', { silent = true, desc = "Explorador de Archivos" })
+            vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>', { silent = true })
         end
     },
 
@@ -51,13 +38,13 @@ require("lazy").setup({
         config = function()
             require("mason").setup()
             require("mason-lspconfig").setup({
-                ensure_installed = { "lua_ls", "pyright", "ts_ls", "html", "cssls" },
+                ensure_installed = { "lua_ls", "pyright", "ts_ls", "html", "cssls", "eslint" },
             })
 
             local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
             -- Configuración de servidores
-            local servers = { "lua_ls", "pyright", "ts_ls", "html", "cssls" }
+            local servers = { "lua_ls", "pyright", "ts_ls", "html", "cssls", "eslint" }
             for _, lsp in ipairs(servers) do
                 vim.lsp.config(lsp, {
                     capabilities = capabilities,
@@ -99,15 +86,12 @@ require("lazy").setup({
             "rafamadriz/friendly-snippets",
         },
         config = function()
-            --local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+            local cmp_autopairs = require('nvim-autopairs.completion.cmp')
             local cmp = require("cmp")
             local ls = require("luasnip") -- Requerimos LuaSnip
-            local s = ls.snippet
-            local f = ls.function_node
-            local i = ls.insert_node
             require("luasnip.loaders.from_vscode").lazy_load()
             -- --- CONFIGURACION DE AUTOCOMPLETADOS DE BRACKETS ---
-           -- cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
+            cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
             -- ----------------------------------------------------
             -- --- CONFIGURACIÓN DE LOREM IPSUM ---
             ls.add_snippets("all", {
@@ -121,40 +105,146 @@ require("lazy").setup({
                 }),
             })
             -- ------------------------------------
-            -- Snippet: seccion.clase -> <seccion class="clase"></seccion>
-            ls.add_snippets("html", {
-                s({ trig = "([%w-]+)%.([%w-]+)", regTrig = true, wordTrig = false }, {
-                    f(function(_, snip)
-                        return string.format('<%s class="%s">', snip.captures[1], snip.captures[2])
-                    end, {}),
-                    i(1),
-                    f(function(_, snip)
-                        return string.format('</%s>', snip.captures[1])
-                    end, {}),
+
+            -- --- SNIPPETS: NODE.JS / EXPRESS / SEQUELIZE ---
+            ls.add_snippets("javascript", {
+
+                -- Express: App principal
+                ls.snippet("expapp", {
+                    ls.text_node({
+                        "const express = require('express');",
+                        "const app = express();",
+                        "",
+                        "app.use(express.json());",
+                        "app.use(express.urlencoded({ extended: true }));",
+                        "",
+                    }),
+                    ls.insert_node(0, "// rutas aquí"),
+                    ls.text_node({
+                        "",
+                        "",
+                        "const PORT = process.env.PORT || 3000;",
+                        "app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));",
+                    }),
+                }),
+
+                -- Express: Router
+                ls.snippet("exprouter", {
+                    ls.text_node("const router = require('express').Router();"),
+                    ls.text_node({ "", "" }),
+                    ls.insert_node(0, "// definí tus rutas aquí"),
+                    ls.text_node({ "", "", "module.exports = router;" }),
+                }),
+
+                -- Express: Ruta GET
+                ls.snippet("eget", {
+                    ls.text_node("router.get('/"),
+                    ls.insert_node(1, "ruta"),
+                    ls.text_node({ "', async (req, res) => {", "    try {" }),
+                    ls.text_node({ "", "        " }),
+                    ls.insert_node(2, "// lógica"),
+                    ls.text_node({ "", "        res.json({ success: true });", "    } catch (err) {", "        res.status(500).json({ error: err.message });", "    }", "});" }),
+                }),
+
+                -- Express: Ruta POST
+                ls.snippet("epost", {
+                    ls.text_node("router.post('/"),
+                    ls.insert_node(1, "ruta"),
+                    ls.text_node({ "', async (req, res) => {", "    try {", "        const data = req.body;" }),
+                    ls.text_node({ "", "        " }),
+                    ls.insert_node(2, "// lógica"),
+                    ls.text_node({ "", "        res.status(201).json({ success: true });", "    } catch (err) {", "        res.status(500).json({ error: err.message });", "    }", "});" }),
+                }),
+
+                -- Express: Middleware de autenticación
+                ls.snippet("emid", {
+                    ls.text_node({ "const authMiddleware = (req, res, next) => {", "    const token = req.headers['authorization'];", "    if (!token) return res.status(401).json({ error: 'Sin autorización' });", "    " }),
+                    ls.insert_node(0, "// validar token"),
+                    ls.text_node({ "", "    next();", "};", "", "module.exports = authMiddleware;" }),
+                }),
+
+                -- Sequelize: Conexión DB
+                ls.snippet("seqconn", {
+                    ls.text_node("const { Sequelize } = require('sequelize');"),
+                    ls.text_node({ "", "" }),
+                    ls.text_node("const sequelize = new Sequelize("),
+                    ls.text_node({ "", "    process.env.DB_NAME,", "    process.env.DB_USER,", "    process.env.DB_PASS,", "    {" }),
+                    ls.text_node({ "", "        host: process.env.DB_HOST || 'localhost'," }),
+                    ls.text_node({ "", "        dialect: '" }),
+                    ls.insert_node(1, "mysql"),
+                    ls.text_node({ "',", "        logging: false,", "    }", ");", "", "module.exports = sequelize;" }),
+                }),
+
+                -- Sequelize: Modelo
+                ls.snippet("seqmodel", {
+                    ls.text_node("const { DataTypes } = require('sequelize');"),
+                    ls.text_node({ "", "const sequelize = require('../config/db');", "" }),
+                    ls.text_node({ "", "const " }),
+                    ls.insert_node(1, "Modelo"),
+                    ls.text_node(" = sequelize.define('"),
+                    ls.insert_node(2, "tabla"),
+                    ls.text_node({ "', {", "    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },", "    " }),
+                    ls.insert_node(3, "nombre"),
+                    ls.text_node({ ": { type: DataTypes.STRING, allowNull: false },", "}, { timestamps: true });", "" }),
+                    ls.text_node({ "", "module.exports = " }),
+                    ls.dynamic_node(4, function(args)
+                        return ls.snippet_node(nil, { ls.text_node(args[1][1]) })
+                    end, { 1 }),
+                    ls.text_node(";"),
+                }),
+
+                -- Sequelize: findAll con where
+                ls.snippet("seqfind", {
+                    ls.text_node("const resultado = await "),
+                    ls.insert_node(1, "Modelo"),
+                    ls.text_node(".findAll({ where: { "),
+                    ls.insert_node(2, "campo"),
+                    ls.text_node(": "),
+                    ls.insert_node(3, "valor"),
+                    ls.text_node(" } });"),
+                }),
+
+                -- Sequelize: create
+                ls.snippet("seqcreate", {
+                    ls.text_node("const nuevo = await "),
+                    ls.insert_node(1, "Modelo"),
+                    ls.text_node(".create({"),
+                    ls.text_node({ "", "    " }),
+                    ls.insert_node(2, "campo"),
+                    ls.text_node(": "),
+                    ls.insert_node(3, "valor"),
+                    ls.text_node({ ",", "});"}),
+                }),
+
+                -- require básico de módulos comunes
+                ls.snippet("req", {
+                    ls.text_node("const "),
+                    ls.insert_node(1, "modulo"),
+                    ls.text_node(" = require('"),
+                    ls.insert_node(2, "ruta"),
+                    ls.text_node("');"),
+                }),
+
+                -- async/await try-catch
+                ls.snippet("trycatch", {
+                    ls.text_node({ "try {", "    " }),
+                    ls.insert_node(1, "// código asíncrono"),
+                    ls.text_node({ "", "} catch (err) {", "    console.error(err);", "    " }),
+                    ls.insert_node(2, "// manejo de error"),
+                    ls.text_node({ "", "}" }),
                 }),
             })
+
+            -- Los mismos snippets aplican para TypeScript
+            ls.filetype_extend("typescript", { "javascript" })
+            -- ------------------------------------
             cmp.setup({
                 snippet = { expand = function(args) require('luasnip').lsp_expand(args.body) end },
                 mapping = cmp.mapping.preset.insert({
                     ['<C-Space>'] = cmp.mapping.complete(),
                     ['<CR>'] = cmp.mapping.confirm({ select = true }),
                     ['<Tab>'] = cmp.mapping(function(fallback)
-                        if require("luasnip").expand_or_jumpable() then
-                            require("luasnip").expand_or_jump()
-                        elseif cmp.visible() then
-                            cmp.select_next_item()
-                        else
-                            fallback()
-                        end
-                    end, { "i", "s" }),
-                    ['<S-Tab>'] = cmp.mapping(function(fallback)
-                        if require("luasnip").jumpable(-1) then
-                            require("luasnip").jump(-1)
-                        elseif cmp.visible() then
-                            cmp.select_prev_item()
-                        else
-                            fallback()
-                        end
+                        if cmp.visible() then cmp.select_next_item() else fallback() end
                     end, { "i", "s" }),
                 }),
                 sources = cmp.config.sources({
@@ -173,7 +263,7 @@ require("lazy").setup({
         "nvim-treesitter/nvim-treesitter",
         build = ":TSUpdate",
         opts = {
-            ensure_installed = { "lua", "vim", "vimdoc", "query", "java", "python", "javascript", "typescript", "html", "css" },
+            ensure_installed = { "lua", "vim", "vimdoc", "query", "java", "python", "javascript", "typescript", "html", "css", "json" },
             highlight = { enable = true },
             indent = { enable = true },
         },
@@ -183,18 +273,7 @@ require("lazy").setup({
     },
 
     -- 6. Autotag
-    {
-        "windwp/nvim-ts-autotag",
-        dependencies = { "nvim-treesitter/nvim-treesitter" },
-        opts = {
-            opts = {
-                -- Esto habilita el autocierre y autorenombre de etiquetas
-                enable_close = true,
-                enable_rename = true,
-                enable_close_on_slash = true,
-            }
-        }
-    },
+    { "windwp/nvim-ts-autotag", opts = {} },
 
     -- 7. BufferLine Tabs
     {
@@ -268,29 +347,6 @@ require("lazy").setup({
                 close_on_exit = true,
                 shell = vim.o.shell,
             })
-
-            -- Configuración adicional: Terminal flotante con Midnight Commander
-            local Terminal = require('toggleterm.terminal').Terminal
-            local mc_term = Terminal:new({
-                cmd = "mc --skin=catppuccin",
-                hidden = true,
-                direction = "float",
-                float_opts = {
-                    border = "curved",
-                    width = math.floor(vim.o.columns * 0.95),  -- 95% del ancho de la pantalla
-                    height = math.floor(vim.o.lines * 0.90),   -- 90% del alto de la pantalla
-                },
-                -- Evitar que Nvim intercepte escapes dentro de mc
-                on_open = function(term)
-                    vim.cmd("startinsert!")
-                    vim.api.nvim_buf_set_keymap(term.bufnr, "n", "q", "<cmd>close<CR>", {noremap = true, silent = true})
-                end,
-            })
-
-            -- Mapeo para <Espacio> + f + m
-            vim.keymap.set('n', '<leader>fm', function()
-                mc_term:toggle()
-            end, { silent = true, desc = "Explorador estilo Midnight Commander" })
         end
     },
        -- 10. Auto-save para que Live Server detecte cambios al escribir
@@ -449,3 +505,4 @@ map("n", "<leader>st", function()
         vim.notify("Spotify no está reproduciendo", "warn")
     end
 end, { desc = "Spotify: Info canción" })
+
