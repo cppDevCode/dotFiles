@@ -98,6 +98,30 @@ Basado en integraciones DBUS y comandos `playerctl` exclusivos para sistemas Lin
 
 ---
 
+## 4. Soporte Node.js + Express + Sequelize
+### 🔧 LSP / Mason
+* eslint agregado a ensure_installed y a la lista de servidores activos — linting automático en archivos .js y .ts
+
+### 🌲 Treesitter
+* Parser json agregado — resaltado de sintaxis en package.json, .sequelizerc, etc.
+
+### ✂️ Snippets LuaSnip (disponibles en .js y .ts)
+| Trigger |	Descripción |
+|---|---|
+| expapp | App Express completa (con express.json(), puerto, listen) |
+| exprouter | Router de Express con module.exports |
+| eget | Ruta GET con async/await y try-catch |
+| epost | Ruta POST con req.body y try-catch |
+| emid | Middleware de autenticación |
+| seqconn | Conexión a base de datos con Sequelize (lee env vars) |
+| seqmodel | Modelo Sequelize con DataTypes, id, timestamps |
+| seqfind | findAll con cláusula where |
+| seqcreate | Model.create({...}) |
+| req | const X = require('...') |
+| trycatch | Bloque try/catch asíncrono |
+
+---
+
 ## 4. Dependencias Externas (Sistema Operativo)
 
 Para que todos los plugins listados funcionen al 100% de sus capacidades, se configuran las dependencias a nivel de sistema operativo. A continuación se incluyen los comandos de preparación e instalación probados para sistemas basados en Debian (Ubuntu, Linux Mint, Debian).
